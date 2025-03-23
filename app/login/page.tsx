@@ -1,18 +1,29 @@
 "use client";
 
-import Link from "next/link"
-import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-import { Navbar } from "@/components/navigation/navbar"
-import { Footer } from "@/components/navigation/footer"
-import { SubtleBackground } from "@/components/ui/subtle-background"
-import { PremiumCard } from "@/components/ui/premium-card"
-import { PremiumButton } from "@/components/ui/premium-button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
+import { Navbar } from "@/components/navigation/navbar";
+import { Footer } from "@/components/navigation/footer";
+import { SubtleBackground } from "@/components/ui/subtle-background";
+import { PremiumCard } from "@/components/ui/premium-card";
+import { PremiumButton } from "@/components/ui/premium-button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session) {
+      router.push("/"); // Redirect to homepage after login
+    }
+  }, [session, router]);
+
   return (
     <div className="min-h-screen bg-background relative">
       {/* Background elements */}
@@ -29,26 +40,30 @@ export default function LoginPage() {
               <p className="text-muted-foreground mt-2">Log in to your DecentWork account</p>
             </div>
 
-            <form className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="name@example.com" />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="/forgot-password" className="text-xs text-primary hover:underline">
-                    Forgot password?
-                  </Link>
+            {session ? (
+              <p className="text-center text-sm text-muted-foreground">Redirecting...</p>
+            ) : (
+              <form className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" placeholder="name@example.com" />
                 </div>
-                <Input id="password" type="password" placeholder="••••••••" />
-              </div>
 
-              <PremiumButton className="w-full" glowIntensity="medium">
-                Log In
-              </PremiumButton>
-            </form>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <Input id="password" type="password" placeholder="••••••••" />
+                </div>
+
+                <PremiumButton className="w-full" glowIntensity="medium">
+                  Log In
+                </PremiumButton>
+              </form>
+            )}
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
@@ -80,6 +95,5 @@ export default function LoginPage() {
 
       <Footer />
     </div>
-  )
+  );
 }
-
