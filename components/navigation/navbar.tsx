@@ -1,38 +1,40 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
-import { Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { PremiumButton } from "@/components/ui/premium-button"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { motion } from "framer-motion";
+import { Menu, X, UserCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PremiumButton } from "@/components/ui/premium-button";
+import { cn } from "@/lib/utils";
 
 interface NavbarProps {
-  transparent?: boolean
+  transparent?: boolean;
 }
 
 export function Navbar({ transparent = false }: NavbarProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const pathname = usePathname()
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { data: session } = useSession();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10)
-    }
+      setScrolled(win+w.scrollY > 10);
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Find Work", href: "/jobs" },
-    { name: "Hire Talent", href: "/freelancers" }, // Make sure this matches your route
-    { name: "How It Works", href: "/how-it-works" }, // Make sure this matches your route
-  ]
+    { name: "Hire Talent", href: "/freelancers" },
+    { name: "How It Works", href: "/how-it-works" },
+  ];
 
   return (
     <motion.header
@@ -40,7 +42,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         scrolled || !transparent
           ? "bg-background/80 backdrop-blur-md border-b border-white/5 shadow-sm"
-          : "bg-transparent",
+          : "bg-transparent"
       )}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -61,7 +63,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
               href={item.href}
               className={cn(
                 "text-sm transition-colors hover:text-primary",
-                pathname === item.href ? "text-primary font-medium" : "text-muted-foreground",
+                pathname === item.href ? "text-primary font-medium" : "text-muted-foreground"
               )}
             >
               {item.name}
@@ -69,18 +71,47 @@ export function Navbar({ transparent = false }: NavbarProps) {
           ))}
         </nav>
 
-        {/* Auth Buttons */}
+        {/* Profile Section or Auth Buttons */}
         <div className="hidden md:flex items-center space-x-4">
-          <Link href="/login">
-            <Button variant="ghost" size="sm">
-              Log In
-            </Button>
-          </Link>
-          <Link href="/signup">
-            <PremiumButton variant="default" size="sm" glowIntensity="medium">
-              Sign Up
-            </PremiumButton>
-          </Link>
+          {session ? (
+            // Profile Dropdown when user is logged in
+            <div className="relative group">
+              <button className="flex items-center space-x-2">
+                <UserCircle className="h-6 w-6 text-primary" />
+                <span className="text-sm font-medium">{session.user?.name || "User"}</span>
+              </button>
+
+              {/* Dropdown Menu */}
+              <div className="absolute right-0 mt-2 w-48 bg-card shadow-md rounded-md hidden group-hover:block">
+                <Link
+                  href="/profile"
+                  className="block px-4 py-2 text-sm hover:bg-primary/10 transition"
+                >
+                  View Profile
+                </Link>
+                <button
+                  onClick={() => signOut()}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-primary/10 transition"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Show Login/Sign Up when not logged in
+            <>
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  Log In
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <PremiumButton variant="default" size="sm" glowIntensity="medium">
+                  Sign Up
+                </PremiumButton>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -111,29 +142,49 @@ export function Navbar({ transparent = false }: NavbarProps) {
                 href={item.href}
                 className={cn(
                   "py-2 text-sm transition-colors hover:text-primary",
-                  pathname === item.href ? "text-primary font-medium" : "text-muted-foreground",
+                  pathname === item.href ? "text-primary font-medium" : "text-muted-foreground"
                 )}
                 onClick={() => setIsOpen(false)}
               >
                 {item.name}
               </Link>
             ))}
+
             <div className="flex flex-col space-y-2 pt-2 border-t border-white/5">
-              <Link href="/login" className="w-full">
-                <Button variant="ghost" size="sm" className="w-full justify-start">
-                  Log In
-                </Button>
-              </Link>
-              <Link href="/signup" className="w-full">
-                <PremiumButton variant="default" size="sm" className="w-full justify-start" glowIntensity="medium">
-                  Sign Up
-                </PremiumButton>
-              </Link>
+              {session ? (
+                // Profile Section for Mobile View
+                <div className="flex flex-col space-y-2">
+                  <Link href="/profile">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      View Profile
+                    </Button>
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="w-full text-left text-sm px-4 py-2 hover:bg-primary/10 transition"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                // Show Login/Sign Up in Mobile View
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      Log In
+                    </Button>
+                  </Link>
+                  <Link href="/signup">
+                    <PremiumButton variant="default" size="sm" className="w-full justify-start" glowIntensity="medium">
+                      Sign Up
+                    </PremiumButton>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </motion.div>
       )}
     </motion.header>
-  )
+  );
 }
-
